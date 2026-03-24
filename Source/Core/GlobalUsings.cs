@@ -1,0 +1,14 @@
+global using System;
+global using System.Collections.Generic;
+global using System.IO;
+global using System.Linq;
+global using System.Reflection;
+global using Celeste;
+global using Celeste.Mod;
+global using Celeste.Editor;
+global using Microsoft.Xna.Framework;
+global using Microsoft.Xna.Framework.Graphics;
+global using Microsoft.Xna.Framework.Input;
+global using MonoMod.ModInterop;
+global using MonoMod.Utils;
+global using Monocle;

@@ -1,0 +1,8 @@
+- Name: AutoSaver
+  Version: 0.1.0
+  DLL: AutoSaver.dll
+  Dependencies:
+    - Name: Everest
+      Version: 1.0.0
+    - Name: SpeedrunTool
+      Version: 3.27.14

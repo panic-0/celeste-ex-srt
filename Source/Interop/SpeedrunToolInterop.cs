@@ -58,12 +58,12 @@ public static class SpeedrunToolInterop {
             }
 
             object?[] args = [null];
-            bool result = (bool) reflectedSaveStateMethod.Invoke(null, args)!;
-            string popup = args[0] as string ?? "";
-            message = result
+            bool saveResult = (bool) reflectedSaveStateMethod.Invoke(null, args)!;
+            string savePopup = args[0] as string ?? "";
+            message = saveResult
                 ? $"Auto-saved to Speedrun Tool slot [{AutoSaveSlotName}]"
-                : $"Failed to auto-save slot [{AutoSaveSlotName}] {popup}".Trim();
-            return result;
+                : $"Failed to auto-save slot [{AutoSaveSlotName}] {savePopup}".Trim();
+            return saveResult;
         }
         catch (Exception ex) {
             message = $"Speedrun Tool auto-save failed: {ex.GetType().Name}";

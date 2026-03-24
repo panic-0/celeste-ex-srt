@@ -20,7 +20,6 @@ public class AutoSaverModule : EverestModule {
     public override void Load() {
         Logger.Log("AutoSaver", $"Module Load start, version={Metadata.VersionString}");
         SpeedrunToolInterop.Load();
-        AutoFreezeController.Load();
         HotkeyHelper.Load();
         RegionEditorController.Load();
         RegionTriggerController.Load();
@@ -32,7 +31,6 @@ public class AutoSaverModule : EverestModule {
         RegionTriggerController.Unload();
         RegionEditorController.Unload();
         HotkeyHelper.Unload();
-        AutoFreezeController.Unload();
         SpeedrunToolInterop.Unload();
     }
 

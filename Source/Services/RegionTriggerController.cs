@@ -102,7 +102,6 @@ public static class RegionTriggerController {
         if (SpeedrunToolInterop.TryAutoSave(out string message)) {
             AutoSaverModule.Session.LastAutoSaveMessage = $"{message} from room [{key.RoomName}] region #{regionId}";
             Logger.Log("AutoSaver", AutoSaverModule.Session.LastAutoSaveMessage);
-            AutoFreezeController.Activate();
             if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
                 UI.Toast.Show(level, AutoSaverModule.Session.LastAutoSaveMessage);
             }

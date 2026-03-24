@@ -8,6 +8,9 @@ public static class AutoSaverMenu {
         menu.Add(new TextMenu.Slider("Trigger Enter Count", value => value.ToString(), 1, 20, AutoSaverModule.Settings.TriggerEnterCountK).Change(value => {
             AutoSaverModule.Settings.TriggerEnterCountK = value;
         }));
+        menu.Add(new TextMenu.OnOff("Disable SRT Freeze On Auto-Save", AutoSaverModule.Settings.DisableSrtFreezeOnAutoSave).Change(value => {
+            AutoSaverModule.Settings.DisableSrtFreezeOnAutoSave = value;
+        }));
         menu.Add(new TextMenu.OnOff("Show Overlay In Level", AutoSaverModule.Settings.ShowOverlayInLevel).Change(value => {
             AutoSaverModule.Settings.ShowOverlayInLevel = value;
         }));

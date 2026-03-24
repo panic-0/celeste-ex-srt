@@ -1,5 +1,6 @@
 using Celeste.Mod.AutoSaver.Interop;
 using Celeste.Mod.AutoSaver.Model;
+using System.Diagnostics;
 
 namespace Celeste.Mod.AutoSaver;
 
@@ -27,7 +28,7 @@ public static class RegionTriggerController {
 
     private static void OnLevelLoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes intro, bool isFromLoader) {
         orig(self, intro, isFromLoader);
-        Logger.Log("AutoSaver", $"Level loaded sid={self.Session.Area.GetSID()} room={self.Session.Level}");
+        Logger.Info("AutoSaver", $"Level loaded sid={self.Session.Area.GetSID()} room={self.Session.Level}");
         LogRoomMaskStatus(self);
         EnsureRoomCache(self);
         EnsureOverlayRenderer(self);
@@ -40,6 +41,7 @@ public static class RegionTriggerController {
 
     private static void OnLevelUpdate(On.Celeste.Level.orig_Update orig, Level self) {
         orig(self);
+        SpeedrunToolInterop.UpdatePendingState(self);
 
         if (!AutoSaverModule.Settings.Enabled) {
             return;
@@ -77,38 +79,53 @@ public static class RegionTriggerController {
     }
 
     private static void OnEnterRegion(Level level, RoomKey key, int regionId) {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        Logger.Info("AutoSaver", $"AUTOSAVER_TRIGGER_BEGIN room=[{key.RoomName}] region={regionId}");
         Dictionary<int, int> roomCounts = GetRoomCounts(key);
         roomCounts[regionId] = roomCounts.GetValueOrDefault(regionId) + 1;
         bool slotHasState = SpeedrunToolInterop.CurrentSlotHasState();
+        long slotCheckElapsedMs = stopwatch.ElapsedMilliseconds;
         Logger.Log("AutoSaver", $"Entered region #{regionId} in room [{key.RoomName}], count={roomCounts[regionId]}, slotHasState={slotHasState}");
 
         if (slotHasState) {
             Logger.Log("AutoSaver", $"Skipped auto-save for region #{regionId} in room [{key.RoomName}] because slot [{SpeedrunToolInterop.AutoSaveSlotName}] already has a save");
+            Logger.Info("AutoSaver", $"AUTOSAVER_TRIGGER_END room=[{key.RoomName}] region={regionId} result=skipped-existing-save");
+            Logger.Info("AutoSaver", $"Auto-save trigger timing for room [{key.RoomName}] region #{regionId}: slot-check={slotCheckElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms (skipped)");
             return;
         }
 
         if (roomCounts[regionId] < Math.Max(1, AutoSaverModule.Settings.TriggerEnterCountK)) {
+            Logger.Info("AutoSaver", $"AUTOSAVER_TRIGGER_END room=[{key.RoomName}] region={regionId} result=waiting-threshold");
+            Logger.Info("AutoSaver", $"Auto-save trigger timing for room [{key.RoomName}] region #{regionId}: slot-check={slotCheckElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms (waiting-for-threshold)");
             return;
         }
 
         if (!SpeedrunToolInterop.CanAutoSave) {
             Logger.Log("AutoSaver", "Region reached but Speedrun Tool auto-save API is unavailable");
+            Logger.Info("AutoSaver", $"AUTOSAVER_TRIGGER_END room=[{key.RoomName}] region={regionId} result=interop-unavailable");
+            Logger.Info("AutoSaver", $"Auto-save trigger timing for room [{key.RoomName}] region #{regionId}: slot-check={slotCheckElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms (interop-unavailable)");
             if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
                 UI.Toast.Show(level, "Region reached, but Speedrun Tool auto-save API is unavailable");
             }
             return;
         }
 
-        if (SpeedrunToolInterop.TryAutoSave(out string message)) {
+        if (SpeedrunToolInterop.TryAutoSave(out string message, AutoSaverModule.Settings.DisableSrtFreezeOnAutoSave)) {
             AutoSaverModule.Session.LastAutoSaveMessage = $"{message} from room [{key.RoomName}] region #{regionId}";
             Logger.Log("AutoSaver", AutoSaverModule.Session.LastAutoSaveMessage);
+            Logger.Info("AutoSaver", $"AUTOSAVER_TRIGGER_END room=[{key.RoomName}] region={regionId} result=success");
+            Logger.Info("AutoSaver", $"Auto-save trigger timing for room [{key.RoomName}] region #{regionId}: slot-check={slotCheckElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms");
             if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
                 UI.Toast.Show(level, AutoSaverModule.Session.LastAutoSaveMessage);
             }
         }
-        else if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
+        else {
             Logger.Log("AutoSaver", $"{message} from room [{key.RoomName}] region #{regionId}");
-            UI.Toast.Show(level, $"{message} from room [{key.RoomName}] region #{regionId}");
+            Logger.Info("AutoSaver", $"AUTOSAVER_TRIGGER_END room=[{key.RoomName}] region={regionId} result=failed");
+            Logger.Info("AutoSaver", $"Auto-save trigger timing for room [{key.RoomName}] region #{regionId}: slot-check={slotCheckElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms (failed)");
+            if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
+                UI.Toast.Show(level, $"{message} from room [{key.RoomName}] region #{regionId}");
+            }
         }
     }
 

@@ -14,6 +14,9 @@ public static class AutoSaverMenu {
         menu.Add(new TextMenu.OnOff("Show Overlay In Level", AutoSaverModule.Settings.ShowOverlayInLevel).Change(value => {
             AutoSaverModule.Settings.ShowOverlayInLevel = value;
         }));
+        menu.Add(new TextMenu.OnOff("Show Lookout Edit Overlay", AutoSaverModule.Settings.ShowLookoutEditOverlay).Change(value => {
+            AutoSaverModule.Settings.ShowLookoutEditOverlay = value;
+        }));
         menu.Add(new TextMenu.OnOff("Show Popup On Auto Save", AutoSaverModule.Settings.ShowPopupOnAutoSave).Change(value => {
             AutoSaverModule.Settings.ShowPopupOnAutoSave = value;
         }));

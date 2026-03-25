@@ -6,7 +6,9 @@ public class AutoSaverSettings : EverestModuleSettings {
     public int TriggerEnterCountK { get; set; } = 1;
     public bool DisableSrtFreezeOnAutoSave { get; set; } = true;
     public bool ShowOverlayInLevel { get; set; } = true;
+    public bool ShowLookoutEditOverlay { get; set; } = true;
     public bool ShowPopupOnAutoSave { get; set; } = true;
+    public ButtonBinding ToggleLookoutEdit { get; set; } = new();
     public ButtonBinding ToggleLevelOverlay { get; set; } = new();
     public List<Keys> KeyboardClearMarkedRegions { get; set; } = new() { Keys.LeftControl, Keys.Back };
     public List<Buttons> ControllerClearMarkedRegions { get; set; } = new();

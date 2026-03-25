@@ -1,11 +1,8 @@
 namespace Celeste.Mod.AutoSaver.Interop;
 
-using System.Diagnostics;
-
 public static class SpeedrunToolInterop {
     public const string AutoSaveSlotName = "Default Slot";
     private const string LogTag = "AutoSaver";
-    private const string MarkerPrefix = "AUTOSAVER_MARKER";
 
     [ModImportName("SpeedrunTool.TasAction")]
     private static class TasImports {
@@ -102,32 +99,21 @@ public static class SpeedrunToolInterop {
     public static bool TryAutoSave(out string message, bool disableSrtFreezeOnAutoSave) {
         if (!CanAutoSave || reflectedSwitchSlotMethod == null || reflectedSaveStateMethod == null) {
             message = "Speedrun Tool unavailable";
-            Logger.Info(LogTag, $"{MarkerPrefix}_ABORT unavailable");
             return false;
         }
 
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        long switchElapsedMs = 0L;
-        long saveElapsedMs = 0L;
-
         try {
-            Logger.Info(LogTag, $"{MarkerPrefix}_BEGIN slot=[{AutoSaveSlotName}] disableFreeze={disableSrtFreezeOnAutoSave}");
             bool switched = (bool) reflectedSwitchSlotMethod.Invoke(null, [AutoSaveSlotName])!;
-            switchElapsedMs = stopwatch.ElapsedMilliseconds;
             if (!switched) {
                 message = $"Failed to switch to slot [{AutoSaveSlotName}]";
-                Logger.Info(LogTag, $"{MarkerPrefix}_ABORT switch-failed");
-                Logger.Info(LogTag, $"Auto-save timing: switch={switchElapsedMs}ms, save=not-run, total={stopwatch.ElapsedMilliseconds}ms");
                 return false;
             }
 
             object?[] args = [null];
             bool saveResult = (bool) reflectedSaveStateMethod.Invoke(null, args)!;
             string savePopup = args[0] as string ?? "";
-            saveElapsedMs = stopwatch.ElapsedMilliseconds - switchElapsedMs;
             if (!saveResult) {
                 message = $"Failed to auto-save slot [{AutoSaveSlotName}] {savePopup}".Trim();
-                Logger.Info(LogTag, $"Auto-save timing: switch={switchElapsedMs}ms, save={saveElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms");
                 return false;
             }
 
@@ -148,15 +134,11 @@ public static class SpeedrunToolInterop {
             message = disableSrtFreezeOnAutoSave
                 ? $"Auto-saved slot [{AutoSaveSlotName}] without SRT freeze or wipe"
                 : $"Auto-saved slot [{AutoSaveSlotName}]";
-            Logger.Info(LogTag, $"{MarkerPrefix}_END success");
-            Logger.Info(LogTag, $"Auto-save timing: switch={switchElapsedMs}ms, save={saveElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms");
             return true;
         }
         catch (Exception ex) {
             message = $"Speedrun Tool auto-save failed: {ex.GetType().Name}";
-            Logger.Info(LogTag, $"{MarkerPrefix}_END failed={ex.GetType().Name}");
             Logger.Log(LogTag, $"Speedrun Tool auto-save invocation failed: {ex}");
-            Logger.Info(LogTag, $"Auto-save timing: switch={switchElapsedMs}ms, save={saveElapsedMs}ms, total={stopwatch.ElapsedMilliseconds}ms (failed)");
             return false;
         }
     }

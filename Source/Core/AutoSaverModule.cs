@@ -18,17 +18,16 @@ public class AutoSaverModule : EverestModule {
     public override Type SessionType => typeof(AutoSaverSession);
 
     public override void Load() {
-        Logger.Info("AutoSaver", $"Module Load start, version={Metadata.VersionString}");
         SpeedrunToolInterop.Load();
         HotkeyHelper.Load();
         RegionEditorController.Load();
+        LookoutEditController.Load();
         RegionTriggerController.Load();
-        Logger.Info("AutoSaver", "Module Load complete");
     }
 
     public override void Unload() {
-        Logger.Info("AutoSaver", "Module Unload");
         RegionTriggerController.Unload();
+        LookoutEditController.Unload();
         RegionEditorController.Unload();
         HotkeyHelper.Unload();
         SpeedrunToolInterop.Unload();

@@ -49,6 +49,38 @@ public static class MapEditorHelper {
         }
     }
 
+    public static bool TryGetCurrentRoom(MapEditor editor, out LevelTemplate? template) {
+        template = null;
+        try {
+            DynamicData data = DynamicData.For(editor);
+            if (data.TryGet("selection", out HashSet<LevelTemplate>? selection) &&
+                selection != null) {
+                template = selection.FirstOrDefault(level => level.Type != LevelTemplateType.Filler);
+                if (template != null) {
+                    return true;
+                }
+            }
+
+            if (data.TryGet("CurrentSession", out Session? currentSession) &&
+                currentSession != null &&
+                data.TryGet("levels", out List<LevelTemplate>? levels) &&
+                levels != null) {
+                template = levels.FirstOrDefault(level =>
+                    level.Type != LevelTemplateType.Filler &&
+                    string.Equals(level.Name, currentSession.Level, StringComparison.Ordinal));
+                if (template != null) {
+                    return true;
+                }
+            }
+
+            return TryGetHoveredRoom(editor, out template);
+        }
+        catch (Exception ex) {
+            LogFailure("resolve-current-room", ex);
+            return false;
+        }
+    }
+
     private static void LogFailure(string operation, Exception ex) {
         string key = $"{operation}:{ex.GetType().FullName}:{ex.Message}";
         if (LoggedFailures.Add(key)) {

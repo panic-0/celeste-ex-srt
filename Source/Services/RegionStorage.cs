@@ -52,7 +52,7 @@ public static class RegionStorage {
                 UI.Toast.Show(level, $"Cleared markers for room [{key.RoomName}]");
             }
         }
-        else if (Engine.Scene is MapEditor editor && MapEditorHelper.TryGetHoveredRoom(editor, out LevelTemplate? template) && template is { Type: not LevelTemplateType.Filler }) {
+        else if (Engine.Scene is MapEditor editor && MapEditorHelper.TryGetCurrentRoom(editor, out LevelTemplate? template) && template is { Type: not LevelTemplateType.Filler }) {
             RoomKey key = RoomKey.From(editor, template);
             if (ClearRoom(key)) {
                 UI.Toast.Show(editor, $"Cleared markers for room [{key.RoomName}]");

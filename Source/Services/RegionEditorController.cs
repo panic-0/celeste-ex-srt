@@ -1,5 +1,4 @@
 using Celeste.Mod.AutoSaver.Model;
-
 namespace Celeste.Mod.AutoSaver;
 
 public static class RegionEditorController {
@@ -7,7 +6,6 @@ public static class RegionEditorController {
     private static AreaKey armedArea;
     private static readonly Color EditorFillColor = new(255, 145, 60, 110);
     private static bool PaintModifierDown => MInput.Keyboard.CurrentState.IsKeyDown(Keys.LeftAlt) || MInput.Keyboard.CurrentState.IsKeyDown(Keys.RightAlt);
-    private static bool EraseModifierDown => MInput.Keyboard.CurrentState.IsKeyDown(Keys.LeftShift) || MInput.Keyboard.CurrentState.IsKeyDown(Keys.RightShift);
 
     public static void Load() {
         On.Monocle.Engine.Update += OnEngineUpdate;
@@ -88,7 +86,10 @@ public static class RegionEditorController {
         MouseState current = actualCurrent;
         bool changed = false;
         if (PaintModifierDown && current.LeftButton == ButtonState.Pressed) {
-            changed = mask.SetCell(cell.X, cell.Y, !EraseModifierDown);
+            changed = mask.SetCell(cell.X, cell.Y, true);
+        }
+        else if (PaintModifierDown && current.RightButton == ButtonState.Pressed) {
+            changed = mask.SetCell(cell.X, cell.Y, false);
         }
 
         if (changed) {
@@ -105,8 +106,8 @@ public static class RegionEditorController {
 
         MapEditorHelper.TryGetHoveredRoom(self, out LevelTemplate? hovered);
         string text = hovered == null || hovered.Type == LevelTemplateType.Filler
-            ? "AutoSaver: Alt+LMB paint, Alt+Shift+LMB erase"
-            : $"AutoSaver: [{hovered.Name}] Alt+LMB paint | Alt+Shift+LMB erase | clear hotkey removes this room";
+            ? "AutoSaver: Alt+LMB paint, Alt+RMB erase"
+            : $"AutoSaver: [{hovered.Name}] Alt+LMB paint | Alt+RMB erase | clear hotkey removes this room";
 
         Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None,
             RasterizerState.CullNone, null, Engine.ScreenMatrix);
@@ -155,7 +156,7 @@ public static class RegionEditorController {
             state.ScrollWheelValue,
             ButtonState.Released,
             state.MiddleButton,
-            state.RightButton,
+            ButtonState.Released,
             state.XButton1,
             state.XButton2
         );

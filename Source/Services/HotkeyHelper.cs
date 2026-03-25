@@ -1,27 +1,44 @@
+using Celeste.Mod.AutoSaver.Model;
+using System.Collections;
+using System.Reflection;
+
 namespace Celeste.Mod.AutoSaver;
 
 public static class HotkeyHelper {
-    private static GamePadState previousGamePadState;
+    private static bool suppressClearCurrentRoomUntilRelease;
 
     public static void Load() {
         On.Monocle.MInput.Update += OnInputUpdate;
-        previousGamePadState = default;
+        suppressClearCurrentRoomUntilRelease = false;
     }
 
     public static void Unload() {
         On.Monocle.MInput.Update -= OnInputUpdate;
-        previousGamePadState = default;
+        suppressClearCurrentRoomUntilRelease = false;
     }
 
     private static void OnInputUpdate(On.Monocle.MInput.orig_Update orig) {
-        orig();
-
         if (!AutoSaverModule.Settings.Enabled) {
+            orig();
             return;
         }
 
-        if (Pressed(AutoSaverModule.Settings.KeyboardClearMarkedRegions, AutoSaverModule.Settings.ControllerClearMarkedRegions)) {
-            RegionStorage.TryClearCurrentRoom();
+        orig();
+
+        KeyboardState actualKeyboardCurrent = MInput.Keyboard.CurrentState;
+        KeyboardState actualKeyboardPrevious = MInput.Keyboard.PreviousState;
+        bool bindingHeld = IsBindingHeld(AutoSaverModule.Settings.ClearCurrentRoomMarkers, actualKeyboardCurrent);
+        bool suppressClearRoomBinding = suppressClearCurrentRoomUntilRelease ||
+                                        ShouldSuppressClearCurrentRoomBinding(actualKeyboardCurrent, actualKeyboardPrevious);
+
+        if (suppressClearCurrentRoomUntilRelease && !bindingHeld) {
+            suppressClearCurrentRoomUntilRelease = false;
+            suppressClearRoomBinding = false;
+        }
+
+        if (suppressClearRoomBinding) {
+            MInput.Keyboard.CurrentState = CreateSuppressedKeyboardState(actualKeyboardCurrent, AutoSaverModule.Settings.ClearCurrentRoomMarkers);
+            MInput.Keyboard.PreviousState = CreateSuppressedKeyboardState(actualKeyboardPrevious, AutoSaverModule.Settings.ClearCurrentRoomMarkers);
         }
 
         if (AutoSaverModule.Settings.ToggleLevelOverlay.Pressed) {
@@ -30,29 +47,87 @@ public static class HotkeyHelper {
                 ? "Level overlay shown"
                 : "Level overlay hidden");
         }
-    }
 
-    private static bool Pressed(List<Keys> keys, List<Buttons> buttons) {
-        bool keyboardPressed = keys.Count > 0 &&
-                              keys.All(key => MInput.Keyboard.CurrentState.IsKeyDown(key)) &&
-                              keys.Any(key => MInput.Keyboard.Pressed(key));
-        if (keyboardPressed) {
-            return true;
+        if (suppressClearRoomBinding || AutoSaverModule.Settings.ClearCurrentRoomMarkers.Pressed) {
+            RegionStorage.TryClearCurrentRoom();
+            if (suppressClearRoomBinding && bindingHeld) {
+                suppressClearCurrentRoomUntilRelease = true;
+            }
         }
-
-        return ControllerPressed(buttons);
     }
 
-    private static bool ControllerPressed(List<Buttons> buttons) {
-        if (buttons.Count == 0) {
-            previousGamePadState = GamePad.GetState(PlayerIndex.One);
+    private static bool ShouldSuppressClearCurrentRoomBinding(KeyboardState currentKeyboardState, KeyboardState previousKeyboardState) {
+        if (Engine.Scene is not MapEditor editor) {
             return false;
         }
 
-        GamePadState currentState = GamePad.GetState(PlayerIndex.One);
-        bool comboHeld = currentState.IsConnected && buttons.All(currentState.IsButtonDown);
-        bool newlyPressed = comboHeld && buttons.Any(button => currentState.IsButtonDown(button) && !previousGamePadState.IsButtonDown(button));
-        previousGamePadState = currentState;
-        return newlyPressed;
+        if (!CurrentMapRoomHasMarkers(editor)) {
+            return false;
+        }
+
+        return IsBindingPressed(AutoSaverModule.Settings.ClearCurrentRoomMarkers, currentKeyboardState, previousKeyboardState);
+    }
+
+    private static bool CurrentMapRoomHasMarkers(MapEditor editor) {
+        if (!MapEditorHelper.TryGetCurrentRoom(editor, out LevelTemplate? currentRoom) ||
+            currentRoom == null ||
+            currentRoom.Type == LevelTemplateType.Filler) {
+            return false;
+        }
+
+        RoomRegionMask? mask = RegionStorage.TryGet(RoomKey.From(editor, currentRoom));
+        return mask != null && !mask.IsEmpty();
+    }
+
+    private static bool IsBindingPressed(ButtonBinding binding, KeyboardState current, KeyboardState previous) {
+        HashSet<Keys> keys = GetBoundKeys(binding);
+        return keys.Count > 0 &&
+               keys.All(current.IsKeyDown) &&
+               keys.Any(key => current.IsKeyDown(key) && !previous.IsKeyDown(key));
+    }
+
+    private static bool IsBindingHeld(ButtonBinding binding, KeyboardState current) {
+        HashSet<Keys> keys = GetBoundKeys(binding);
+        return keys.Count > 0 && keys.All(current.IsKeyDown);
+    }
+
+    private static KeyboardState CreateSuppressedKeyboardState(KeyboardState state, ButtonBinding binding) {
+        HashSet<Keys> suppressedKeys = GetBoundKeys(binding);
+        Keys[] remainingKeys = state.GetPressedKeys().Where(key => !suppressedKeys.Contains(key)).ToArray();
+        return new KeyboardState(remainingKeys);
+    }
+
+    private static HashSet<Keys> GetBoundKeys(ButtonBinding binding) {
+        HashSet<Keys> keys = [];
+        Type type = binding.GetType();
+
+        foreach (PropertyInfo property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
+            TryCollectKeys(property.GetValue(binding), keys);
+        }
+
+        foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
+            TryCollectKeys(field.GetValue(binding), keys);
+        }
+
+        return keys;
+    }
+
+    private static void TryCollectKeys(object? value, HashSet<Keys> keys) {
+        if (value == null) {
+            return;
+        }
+
+        if (value is Keys key) {
+            keys.Add(key);
+            return;
+        }
+
+        if (value is IEnumerable enumerable and not string) {
+            foreach (object? item in enumerable) {
+                if (item is Keys nestedKey) {
+                    keys.Add(nestedKey);
+                }
+            }
+        }
     }
 }

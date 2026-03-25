@@ -10,6 +10,5 @@ public class AutoSaverSettings : EverestModuleSettings {
     public bool ShowPopupOnAutoSave { get; set; } = true;
     public ButtonBinding ToggleLookoutEdit { get; set; } = new();
     public ButtonBinding ToggleLevelOverlay { get; set; } = new();
-    public List<Keys> KeyboardClearMarkedRegions { get; set; } = new() { Keys.LeftControl, Keys.Back };
-    public List<Buttons> ControllerClearMarkedRegions { get; set; } = new();
+    public ButtonBinding ClearCurrentRoomMarkers { get; set; } = new();
 }

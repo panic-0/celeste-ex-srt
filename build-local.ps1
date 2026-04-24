@@ -5,7 +5,7 @@ param(
 
     [switch] $NoDeploy,
 
-    [string] $ProjectPath = ".\AutoSaver.csproj",
+    [string] $ProjectPath = ".\ex-srt.csproj",
 
     [string] $CelesteRoot = "C:\Program Files (x86)\Steam\steamapps\common\Celeste",
 
@@ -20,18 +20,20 @@ $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectFullPath = Join-Path $repoRoot $ProjectPath
 $dotnet = "C:\Program Files\dotnet\dotnet.exe"
 $outputDirectory = Join-Path $repoRoot ("bin\" + $Configuration + "\net10.0")
-$dllPath = Join-Path $outputDirectory "AutoSaver.dll"
-$pdbPath = Join-Path $outputDirectory "AutoSaver.pdb"
+$dllPath = Join-Path $outputDirectory "ex-srt.dll"
+$pdbPath = Join-Path $outputDirectory "ex-srt.pdb"
 $yamlPath = Join-Path $repoRoot "manifest\everest.yaml"
 $legacyRepoArtifacts = @(
     (Join-Path $repoRoot "CeleAutoSaver.dll"),
     (Join-Path $repoRoot "CeleAutoSaver.pdb"),
     (Join-Path $repoRoot "AutoSaver.dll"),
-    (Join-Path $repoRoot "AutoSaver.pdb")
+    (Join-Path $repoRoot "AutoSaver.pdb"),
+    (Join-Path $repoRoot "ex-srt.dll"),
+    (Join-Path $repoRoot "ex-srt.pdb")
 )
 
 if ([string]::IsNullOrWhiteSpace($ModDirectory)) {
-    $ModDirectory = Join-Path $CelesteRoot "Mods\AutoSaver"
+    $ModDirectory = Join-Path $CelesteRoot "Mods\ex-srt"
 }
 
 if (!(Test-Path $projectFullPath)) {
@@ -52,7 +54,7 @@ $env:DOTNET_NOLOGO = "1"
 $env:NUGET_PACKAGES = Join-Path $repoRoot ".nuget\packages"
 $env:APPDATA = Join-Path $repoRoot ".appdata"
 
-Write-Host "Building AutoSaver ($Configuration)..."
+Write-Host "Building ex-srt ($Configuration)..."
 & $dotnet build $projectFullPath --configuration $Configuration --no-incremental --configfile (Join-Path $repoRoot "NuGet.Config")
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet build failed with exit code $LASTEXITCODE"
@@ -85,10 +87,10 @@ if ($CleanLegacyArtifacts) {
     }
 }
 
-Copy-Item $dllPath (Join-Path $ModDirectory "AutoSaver.dll") -Force
+Copy-Item $dllPath (Join-Path $ModDirectory "ex-srt.dll") -Force
 if (Test-Path $pdbPath) {
-    Copy-Item $pdbPath (Join-Path $ModDirectory "AutoSaver.pdb") -Force
+    Copy-Item $pdbPath (Join-Path $ModDirectory "ex-srt.pdb") -Force
 }
 Copy-Item $yamlPath (Join-Path $ModDirectory "everest.yaml") -Force
 
-Write-Host "Deployed AutoSaver to: $ModDirectory"
+Write-Host "Deployed ex-srt to: $ModDirectory"

@@ -1,47 +1,47 @@
-using Celeste.Mod.AutoSaver.Model;
+using Celeste.Mod.ExSrt.Model;
 
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
 public static class RegionStorage {
     public static RoomRegionMask GetOrCreate(RoomKey key, Rectangle bounds) {
-        if (!AutoSaverModule.SaveData.Rooms.TryGetValue(key.ToString(), out RoomRegionMask? mask)) {
+        if (!ExSrtModule.SaveData.Rooms.TryGetValue(key.ToString(), out RoomRegionMask? mask)) {
             mask = RoomRegionMask.Create(bounds);
-            AutoSaverModule.SaveData.Rooms[key.ToString()] = mask;
+            ExSrtModule.SaveData.Rooms[key.ToString()] = mask;
         }
 
         int widthCells = Math.Max(1, (int) Math.Ceiling(bounds.Width / (float) RoomRegionMask.CellSize));
         int heightCells = Math.Max(1, (int) Math.Ceiling(bounds.Height / (float) RoomRegionMask.CellSize));
         if (mask.OriginX != bounds.X || mask.OriginY != bounds.Y || mask.WidthCells != widthCells || mask.HeightCells != heightCells) {
             mask = RoomRegionMask.Create(bounds);
-            AutoSaverModule.SaveData.Rooms[key.ToString()] = mask;
+            ExSrtModule.SaveData.Rooms[key.ToString()] = mask;
         }
 
         return mask.WithInitializedRows();
     }
 
     public static RoomRegionMask? TryGet(RoomKey key) {
-        return AutoSaverModule.SaveData.Rooms.TryGetValue(key.ToString(), out RoomRegionMask? mask) ? mask.WithInitializedRows() : null;
+        return ExSrtModule.SaveData.Rooms.TryGetValue(key.ToString(), out RoomRegionMask? mask) ? mask.WithInitializedRows() : null;
     }
 
     public static bool ClearRoom(RoomKey key) {
-        bool removed = AutoSaverModule.SaveData.Rooms.Remove(key.ToString());
-        AutoSaverModule.Session.EnterCounts.Remove(key.ToString());
+        bool removed = ExSrtModule.SaveData.Rooms.Remove(key.ToString());
+        ExSrtModule.Session.EnterCounts.Remove(key.ToString());
         return removed;
     }
 
     public static int ClearChapter(string sid, AreaMode mode) {
-        List<string> keys = AutoSaverModule.SaveData.Rooms.Keys.Where(key => key.StartsWith($"{sid}|{mode}|", StringComparison.Ordinal)).ToList();
+        List<string> keys = ExSrtModule.SaveData.Rooms.Keys.Where(key => key.StartsWith($"{sid}|{mode}|", StringComparison.Ordinal)).ToList();
         foreach (string key in keys) {
-            AutoSaverModule.SaveData.Rooms.Remove(key);
-            AutoSaverModule.Session.EnterCounts.Remove(key);
+            ExSrtModule.SaveData.Rooms.Remove(key);
+            ExSrtModule.Session.EnterCounts.Remove(key);
         }
 
         return keys.Count;
     }
 
     public static void ClearAll() {
-        AutoSaverModule.SaveData.Rooms.Clear();
-        AutoSaverModule.Session.EnterCounts.Clear();
+        ExSrtModule.SaveData.Rooms.Clear();
+        ExSrtModule.Session.EnterCounts.Clear();
         UI.Toast.Show(Engine.Scene, "Cleared all auto-save markers");
     }
 

@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace Celeste.Mod.AutoSaver.Model;
+namespace Celeste.Mod.ExSrt.Model;
 
 [DataContract]
 public class RoomRegionMask {

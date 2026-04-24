@@ -1,5 +1,5 @@
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
-public class AutoSaverSaveData : EverestModuleSaveData {
+public class ExSrtSaveData : EverestModuleSaveData {
     public Dictionary<string, Model.RoomRegionMask> Rooms { get; set; } = new();
 }

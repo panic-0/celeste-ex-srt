@@ -1,8 +1,8 @@
-using Celeste.Mod.AutoSaver.Model;
+using Celeste.Mod.ExSrt.Model;
 using System.Collections;
 using System.Reflection;
 
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
 public static class HotkeyHelper {
     private static bool suppressClearCurrentRoomUntilRelease;
@@ -18,7 +18,7 @@ public static class HotkeyHelper {
     }
 
     private static void OnInputUpdate(On.Monocle.MInput.orig_Update orig) {
-        if (!AutoSaverModule.Settings.Enabled) {
+        if (!ExSrtModule.Settings.Enabled) {
             orig();
             return;
         }
@@ -27,7 +27,7 @@ public static class HotkeyHelper {
 
         KeyboardState actualKeyboardCurrent = MInput.Keyboard.CurrentState;
         KeyboardState actualKeyboardPrevious = MInput.Keyboard.PreviousState;
-        bool bindingHeld = IsBindingHeld(AutoSaverModule.Settings.ClearCurrentRoomMarkers, actualKeyboardCurrent);
+        bool bindingHeld = IsBindingHeld(ExSrtModule.Settings.ClearCurrentRoomMarkers, actualKeyboardCurrent);
         bool suppressClearRoomBinding = suppressClearCurrentRoomUntilRelease ||
                                         ShouldSuppressClearCurrentRoomBinding(actualKeyboardCurrent, actualKeyboardPrevious);
 
@@ -37,18 +37,18 @@ public static class HotkeyHelper {
         }
 
         if (suppressClearRoomBinding) {
-            MInput.Keyboard.CurrentState = CreateSuppressedKeyboardState(actualKeyboardCurrent, AutoSaverModule.Settings.ClearCurrentRoomMarkers);
-            MInput.Keyboard.PreviousState = CreateSuppressedKeyboardState(actualKeyboardPrevious, AutoSaverModule.Settings.ClearCurrentRoomMarkers);
+            MInput.Keyboard.CurrentState = CreateSuppressedKeyboardState(actualKeyboardCurrent, ExSrtModule.Settings.ClearCurrentRoomMarkers);
+            MInput.Keyboard.PreviousState = CreateSuppressedKeyboardState(actualKeyboardPrevious, ExSrtModule.Settings.ClearCurrentRoomMarkers);
         }
 
-        if (AutoSaverModule.Settings.ToggleLevelOverlay.Pressed) {
-            AutoSaverModule.Settings.ShowOverlayInLevel = !AutoSaverModule.Settings.ShowOverlayInLevel;
-            UI.Toast.Show(Engine.Scene, AutoSaverModule.Settings.ShowOverlayInLevel
+        if (ExSrtModule.Settings.ToggleLevelOverlay.Pressed) {
+            ExSrtModule.Settings.ShowOverlayInLevel = !ExSrtModule.Settings.ShowOverlayInLevel;
+            UI.Toast.Show(Engine.Scene, ExSrtModule.Settings.ShowOverlayInLevel
                 ? "Level overlay shown"
                 : "Level overlay hidden");
         }
 
-        if (suppressClearRoomBinding || AutoSaverModule.Settings.ClearCurrentRoomMarkers.Pressed) {
+        if (suppressClearRoomBinding || ExSrtModule.Settings.ClearCurrentRoomMarkers.Pressed) {
             RegionStorage.TryClearCurrentRoom();
             if (suppressClearRoomBinding && bindingHeld) {
                 suppressClearCurrentRoomUntilRelease = true;
@@ -65,7 +65,7 @@ public static class HotkeyHelper {
             return false;
         }
 
-        return IsBindingPressed(AutoSaverModule.Settings.ClearCurrentRoomMarkers, currentKeyboardState, previousKeyboardState);
+        return IsBindingPressed(ExSrtModule.Settings.ClearCurrentRoomMarkers, currentKeyboardState, previousKeyboardState);
     }
 
     private static bool CurrentMapRoomHasMarkers(MapEditor editor) {

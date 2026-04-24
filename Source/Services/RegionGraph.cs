@@ -1,6 +1,6 @@
-using Celeste.Mod.AutoSaver.Model;
+using Celeste.Mod.ExSrt.Model;
 
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
 public static class RegionGraph {
     private static readonly Point[] Offsets = {

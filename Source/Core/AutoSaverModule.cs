@@ -1,21 +1,21 @@
-using Celeste.Mod.AutoSaver.Interop;
+using Celeste.Mod.ExSrt.Interop;
 
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
-public class AutoSaverModule : EverestModule {
-    public static AutoSaverModule Instance { get; private set; } = null!;
+public class ExSrtModule : EverestModule {
+    public static ExSrtModule Instance { get; private set; } = null!;
 
-    public static AutoSaverSettings Settings => (AutoSaverSettings) Instance._Settings!;
-    public static AutoSaverSaveData SaveData => (AutoSaverSaveData) Instance._SaveData!;
-    public static AutoSaverSession Session => (AutoSaverSession) Instance._Session!;
+    public static ExSrtSettings Settings => (ExSrtSettings) Instance._Settings!;
+    public static ExSrtSaveData SaveData => (ExSrtSaveData) Instance._SaveData!;
+    public static ExSrtSession Session => (ExSrtSession) Instance._Session!;
 
-    public AutoSaverModule() {
+    public ExSrtModule() {
         Instance = this;
     }
 
-    public override Type SettingsType => typeof(AutoSaverSettings);
-    public override Type SaveDataType => typeof(AutoSaverSaveData);
-    public override Type SessionType => typeof(AutoSaverSession);
+    public override Type SettingsType => typeof(ExSrtSettings);
+    public override Type SaveDataType => typeof(ExSrtSaveData);
+    public override Type SessionType => typeof(ExSrtSession);
 
     public override void Load() {
         SpeedrunToolInterop.Load();
@@ -35,7 +35,7 @@ public class AutoSaverModule : EverestModule {
 
     public override void CreateModMenuSection(TextMenu menu, bool inGame, FMOD.Studio.EventInstance snapshot) {
         CreateModMenuSectionHeader(menu, inGame, snapshot);
-        AutoSaverMenu.Create(menu, inGame);
+        ExSrtMenu.Create(menu, inGame);
         CreateModMenuSectionKeyBindings(menu, inGame, snapshot);
     }
 }

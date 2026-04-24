@@ -8,13 +8,13 @@
     <Prefer32Bit>false</Prefer32Bit>
     <DebugType>portable</DebugType>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <RootNamespace>Celeste.Mod.AutoSaver</RootNamespace>
-    <AssemblyName>AutoSaver</AssemblyName>
+    <RootNamespace>Celeste.Mod.ExSrt</RootNamespace>
+    <AssemblyName>ex-srt</AssemblyName>
     <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('refs\\Celeste\\Celeste.dll')">$(MSBuildProjectDirectory)\refs\Celeste</CelestePrefix>
     <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('../../../Celeste.dll')">../../..</CelestePrefix>
     <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('Celeste.dll')">$(MSBuildProjectDirectory)</CelestePrefix>
     <SteamCelestePrefix Condition="'$(SteamCelestePrefix)' == '' And Exists('C:\Program Files (x86)\Steam\steamapps\common\Celeste\Celeste.dll')">C:\Program Files (x86)\Steam\steamapps\common\Celeste</SteamCelestePrefix>
-    <PathMap>$(MSBuildProjectDirectory)=AutoSaver/</PathMap>
+    <PathMap>$(MSBuildProjectDirectory)=ex-srt/</PathMap>
   </PropertyGroup>
 
   <ItemDefinitionGroup>

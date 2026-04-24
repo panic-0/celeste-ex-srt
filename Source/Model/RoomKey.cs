@@ -1,4 +1,4 @@
-namespace Celeste.Mod.AutoSaver.Model;
+namespace Celeste.Mod.ExSrt.Model;
 
 public readonly record struct RoomKey(string Sid, AreaMode Mode, string RoomName) {
     public override string ToString() => $"{Sid}|{Mode}|{RoomName}";

@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSaver", "AutoSaver.csproj", "{290FBCBE-C43D-CC97-ACD3-E86EEC81DEB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ex-srt", "ex-srt.csproj", "{290FBCBE-C43D-CC97-ACD3-E86EEC81DEB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSaver.LogicChecks", "Tests\AutoSaver.LogicChecks.csproj", "{5B29EF31-4591-45DF-92D0-80E16B57F03D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ex-srt.LogicChecks", "Tests\AutoSaver.LogicChecks.csproj", "{5B29EF31-4591-45DF-92D0-80E16B57F03D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

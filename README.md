@@ -1,6 +1,13 @@
-# AutoSaver
+# ex-srt
 
 Celeste Everest mod for painting room regions and auto-saving to Speedrun Tool when the player enters marked regions.
+
+Chinese user guide: `USER_GUIDE_zh-CN.md`
+
+Current editor controls are documented in the Chinese guide, including:
+- `Alt + Left Click` paint in the map editor
+- `Alt + Right Click` erase in the map editor
+- configurable bindings for `Toggle Lookout Edit`, `Toggle Level Overlay`, and `Clear Current Room Markers`
 
 ## Requirements
 
@@ -19,7 +26,7 @@ Celeste Everest mod for painting room regions and auto-saving to Speedrun Tool w
 - `Source/UI`: lightweight in-game UI helpers
 - `refs/Celeste`: local Celeste development references kept out of git
 - `manifest/everest.yaml`: Everest manifest used for deployment
-- `AutoSaver.csproj`: main project
+- `ex-srt.csproj`: main project
 - `build-local.ps1`: local build and deploy script
 - `thirdparty/SpeedrunTool/README.md`: integration notes reference
 
@@ -58,9 +65,9 @@ Clean old `CeleAutoSaver` leftovers while building:
 ## What The Script Does
 
 - configures local NuGet and dotnet cache folders inside the repo
-- builds `AutoSaver.csproj`
-- creates `Mods\AutoSaver` if it does not exist
-- copies `AutoSaver.dll`, `AutoSaver.pdb`, and `manifest/everest.yaml` into the mod folder
+- builds `ex-srt.csproj`
+- creates `Mods\ex-srt` if it does not exist
+- copies `ex-srt.dll`, `ex-srt.pdb`, and `manifest/everest.yaml` into the mod folder
 
 ## Manual Build
 
@@ -72,7 +79,7 @@ $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE="1"
 $env:DOTNET_NOLOGO="1"
 $env:NUGET_PACKAGES="$PWD\.nuget\packages"
 $env:APPDATA="$PWD\.appdata"
-& "C:\Program Files\dotnet\dotnet.exe" build .\AutoSaver.csproj --configuration Debug --no-incremental --configfile .\NuGet.Config
+& "C:\Program Files\dotnet\dotnet.exe" build .\ex-srt.csproj --configuration Debug --no-incremental --configfile .\NuGet.Config
 ```
 
 ## Known Warnings

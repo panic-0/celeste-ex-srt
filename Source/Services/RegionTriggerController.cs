@@ -1,7 +1,7 @@
-using Celeste.Mod.AutoSaver.Interop;
-using Celeste.Mod.AutoSaver.Model;
+using Celeste.Mod.ExSrt.Interop;
+using Celeste.Mod.ExSrt.Model;
 
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
 public static class RegionTriggerController {
     private const float RuntimeToEditorScale = 8f;
@@ -27,6 +27,7 @@ public static class RegionTriggerController {
 
     private static void OnLevelLoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes intro, bool isFromLoader) {
         orig(self, intro, isFromLoader);
+        LastRegionsByRoom.Remove(RoomKey.From(self).ToString());
         LogRoomMaskStatus(self);
         EnsureRoomCache(self);
         EnsureOverlayRenderer(self);
@@ -41,7 +42,7 @@ public static class RegionTriggerController {
         orig(self);
         SpeedrunToolInterop.UpdatePendingState(self);
 
-        if (!AutoSaverModule.Settings.Enabled || LookoutEditController.IsEditingActive) {
+        if (!ExSrtModule.Settings.Enabled || LookoutEditController.IsEditingActive) {
             return;
         }
 
@@ -80,44 +81,44 @@ public static class RegionTriggerController {
         Dictionary<int, int> roomCounts = GetRoomCounts(key);
         roomCounts[regionId] = roomCounts.GetValueOrDefault(regionId) + 1;
         bool slotHasState = SpeedrunToolInterop.CurrentSlotHasState();
-        Logger.Log("AutoSaver", $"Entered region #{regionId} in room [{key.RoomName}], count={roomCounts[regionId]}, slotHasState={slotHasState}");
+        Logger.Log("ex-srt", $"Entered region #{regionId} in room [{key.RoomName}], count={roomCounts[regionId]}, slotHasState={slotHasState}");
 
         if (slotHasState) {
-            Logger.Log("AutoSaver", $"Skipped auto-save for region #{regionId} in room [{key.RoomName}] because slot [{SpeedrunToolInterop.AutoSaveSlotName}] already has a save");
+            Logger.Log("ex-srt", $"Skipped auto-save for region #{regionId} in room [{key.RoomName}] because slot [{SpeedrunToolInterop.AutoSaveSlotName}] already has a save");
             return;
         }
 
-        if (roomCounts[regionId] < Math.Max(1, AutoSaverModule.Settings.TriggerEnterCountK)) {
+        if (roomCounts[regionId] < Math.Max(1, ExSrtModule.Settings.TriggerEnterCountK)) {
             return;
         }
 
         if (!SpeedrunToolInterop.CanAutoSave) {
-            Logger.Log("AutoSaver", "Region reached but Speedrun Tool auto-save API is unavailable");
-            if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
+            Logger.Log("ex-srt", "Region reached but Speedrun Tool auto-save API is unavailable");
+            if (ExSrtModule.Settings.ShowPopupOnAutoSave) {
                 UI.Toast.Show(level, "Region reached, but Speedrun Tool auto-save API is unavailable");
             }
             return;
         }
 
-        if (SpeedrunToolInterop.TryAutoSave(out string message, AutoSaverModule.Settings.DisableSrtFreezeOnAutoSave)) {
-            AutoSaverModule.Session.LastAutoSaveMessage = $"{message} from room [{key.RoomName}] region #{regionId}";
-            Logger.Log("AutoSaver", AutoSaverModule.Session.LastAutoSaveMessage);
-            if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
-                UI.Toast.Show(level, AutoSaverModule.Session.LastAutoSaveMessage);
+        if (SpeedrunToolInterop.TryAutoSave(out string message, ExSrtModule.Settings.DisableSrtFreezeOnAutoSave)) {
+            ExSrtModule.Session.LastAutoSaveMessage = $"{message} from room [{key.RoomName}] region #{regionId}";
+            Logger.Log("ex-srt", ExSrtModule.Session.LastAutoSaveMessage);
+            if (ExSrtModule.Settings.ShowPopupOnAutoSave) {
+                UI.Toast.Show(level, ExSrtModule.Session.LastAutoSaveMessage);
             }
         }
         else {
-            Logger.Log("AutoSaver", $"{message} from room [{key.RoomName}] region #{regionId}");
-            if (AutoSaverModule.Settings.ShowPopupOnAutoSave) {
+            Logger.Log("ex-srt", $"{message} from room [{key.RoomName}] region #{regionId}");
+            if (ExSrtModule.Settings.ShowPopupOnAutoSave) {
                 UI.Toast.Show(level, $"{message} from room [{key.RoomName}] region #{regionId}");
             }
         }
     }
 
     private static Dictionary<int, int> GetRoomCounts(RoomKey key) {
-        if (!AutoSaverModule.Session.EnterCounts.TryGetValue(key.ToString(), out Dictionary<int, int>? counts)) {
+        if (!ExSrtModule.Session.EnterCounts.TryGetValue(key.ToString(), out Dictionary<int, int>? counts)) {
             counts = new Dictionary<int, int>();
-            AutoSaverModule.Session.EnterCounts[key.ToString()] = counts;
+            ExSrtModule.Session.EnterCounts[key.ToString()] = counts;
         }
 
         return counts;
@@ -141,19 +142,19 @@ public static class RegionTriggerController {
     private static void LogRoomMaskStatus(Level level) {
         RoomKey key = RoomKey.From(level);
         RoomRegionMask? mask = RegionStorage.TryGet(key);
-        string[] roomNameMatches = AutoSaverModule.SaveData.Rooms.Keys
+        string[] roomNameMatches = ExSrtModule.SaveData.Rooms.Keys
             .Where(savedKey => savedKey.EndsWith($"|{key.RoomName}", StringComparison.Ordinal))
             .Take(8)
             .ToArray();
 
         if (mask == null) {
-            Logger.Log("AutoSaver",
-                $"Level load key [{key}] has no saved mask. totalSavedRooms={AutoSaverModule.SaveData.Rooms.Count}, roomNameMatches=[{string.Join(", ", roomNameMatches)}]");
+            Logger.Log("ex-srt",
+                $"Level load key [{key}] has no saved mask. totalSavedRooms={ExSrtModule.SaveData.Rooms.Count}, roomNameMatches=[{string.Join(", ", roomNameMatches)}]");
             return;
         }
 
-        Logger.Log("AutoSaver",
-            $"Level load key [{key}] mask found. markedCells={mask.CountMarkedCells()} version={mask.Version} totalSavedRooms={AutoSaverModule.SaveData.Rooms.Count}");
+        Logger.Log("ex-srt",
+            $"Level load key [{key}] mask found. markedCells={mask.CountMarkedCells()} version={mask.Version} totalSavedRooms={ExSrtModule.SaveData.Rooms.Count}");
     }
 
     private static HashSet<int> GetTouchedRegions(RoomRegionMask mask, RoomRegionIndex regions, Player player) {
@@ -228,8 +229,8 @@ public static class RegionTriggerController {
         public override void Render() {
             base.Render();
 
-            if (!AutoSaverModule.Settings.Enabled ||
-                !AutoSaverModule.Settings.ShowOverlayInLevel ||
+            if (!ExSrtModule.Settings.Enabled ||
+                !ExSrtModule.Settings.ShowOverlayInLevel ||
                 Scene is not Level level) {
                 return;
             }

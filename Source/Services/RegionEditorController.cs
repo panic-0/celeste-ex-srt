@@ -1,5 +1,5 @@
-using Celeste.Mod.AutoSaver.Model;
-namespace Celeste.Mod.AutoSaver;
+using Celeste.Mod.ExSrt.Model;
+namespace Celeste.Mod.ExSrt;
 
 public static class RegionEditorController {
     private static bool mapEditorArmed;
@@ -33,8 +33,8 @@ public static class RegionEditorController {
         if (before is Level level && Engine.Scene is MapEditor) {
             mapEditorArmed = true;
             armedArea = level.Session.Area;
-            Logger.Log("AutoSaver", $"MapEditor armed from level area={armedArea.GetSID()} mode={armedArea.Mode}");
-            UI.Toast.Show(Engine.Scene, $"AutoSaver armed for {armedArea.GetSID()}");
+            Logger.Log("ex-srt", $"MapEditor armed from level area={armedArea.GetSID()} mode={armedArea.Mode}");
+            UI.Toast.Show(Engine.Scene, $"ex-srt armed for {armedArea.GetSID()}");
         }
         else if (Engine.Scene is not MapEditor) {
             mapEditorArmed = false;
@@ -93,7 +93,7 @@ public static class RegionEditorController {
         }
 
         if (changed) {
-            Logger.Log("AutoSaver", $"Edited room key [{key}] markedCells={mask.CountMarkedCells()} version={mask.Version}");
+            Logger.Log("ex-srt", $"Edited room key [{key}] markedCells={mask.CountMarkedCells()} version={mask.Version}");
         }
     }
 
@@ -106,8 +106,8 @@ public static class RegionEditorController {
 
         MapEditorHelper.TryGetHoveredRoom(self, out LevelTemplate? hovered);
         string text = hovered == null || hovered.Type == LevelTemplateType.Filler
-            ? "AutoSaver: Alt+LMB paint, Alt+RMB erase"
-            : $"AutoSaver: [{hovered.Name}] Alt+LMB paint | Alt+RMB erase | clear hotkey removes this room";
+            ? "ex-srt: Alt+LMB paint, Alt+RMB erase"
+            : $"ex-srt: [{hovered.Name}] Alt+LMB paint | Alt+RMB erase | clear hotkey removes this room";
 
         Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None,
             RasterizerState.CullNone, null, Engine.ScreenMatrix);
@@ -143,7 +143,7 @@ public static class RegionEditorController {
     }
 
     private static bool CanEdit(MapEditor editor) {
-        return AutoSaverModule.Settings.Enabled &&
+        return ExSrtModule.Settings.Enabled &&
                mapEditorArmed &&
                MapEditorHelper.TryGetEditingArea(editor, out AreaKey area) &&
                area == armedArea;

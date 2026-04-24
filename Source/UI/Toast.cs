@@ -1,4 +1,4 @@
-namespace Celeste.Mod.AutoSaver.UI;
+namespace Celeste.Mod.ExSrt.UI;
 
 [Tracked]
 public class Toast : Entity {

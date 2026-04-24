@@ -1,5 +1,5 @@
-using Celeste.Mod.AutoSaver;
-using Celeste.Mod.AutoSaver.Model;
+using Celeste.Mod.ExSrt;
+using Celeste.Mod.ExSrt.Model;
 using Microsoft.Xna.Framework;
 
 TestRoomRegionMaskSetCell();
@@ -7,7 +7,7 @@ TestRoomRegionMaskInitializationTrimsAndPadsRows();
 TestRegionGraphBuildsStableRegionIds();
     TestRoomRegionIndexBoundsChecks();
 
-Console.WriteLine("All AutoSaver logic tests passed.");
+Console.WriteLine("All ex-srt logic tests passed.");
 
 static void TestRoomRegionMaskSetCell() {
     RoomRegionMask mask = RoomRegionMask.Create(new Rectangle(0, 0, 3, 2));

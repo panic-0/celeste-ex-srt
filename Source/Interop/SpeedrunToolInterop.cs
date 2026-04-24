@@ -1,8 +1,8 @@
-namespace Celeste.Mod.AutoSaver.Interop;
+namespace Celeste.Mod.ExSrt.Interop;
 
 public static class SpeedrunToolInterop {
     public const string AutoSaveSlotName = "Default Slot";
-    private const string LogTag = "AutoSaver";
+    private const string LogTag = "ex-srt";
 
     [ModImportName("SpeedrunTool.TasAction")]
     private static class TasImports {

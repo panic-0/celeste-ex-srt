@@ -1,4 +1,4 @@
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
 public static class MapEditorHelper {
     private static readonly HashSet<string> LoggedFailures = new();
@@ -84,7 +84,7 @@ public static class MapEditorHelper {
     private static void LogFailure(string operation, Exception ex) {
         string key = $"{operation}:{ex.GetType().FullName}:{ex.Message}";
         if (LoggedFailures.Add(key)) {
-            Logger.Log("AutoSaver", $"MapEditorHelper failed to {operation}: {ex.GetType().Name}: {ex.Message}");
+            Logger.Log("ex-srt", $"MapEditorHelper failed to {operation}: {ex.GetType().Name}: {ex.Message}");
         }
     }
 }

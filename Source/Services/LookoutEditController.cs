@@ -1,6 +1,6 @@
-using Celeste.Mod.AutoSaver.Model;
+using Celeste.Mod.ExSrt.Model;
 
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
 public static class LookoutEditController {
     private const float RuntimeToEditorScale = 8f;
@@ -33,7 +33,7 @@ public static class LookoutEditController {
     private static void OnLevelUpdate(On.Celeste.Level.orig_Update orig, Level self) {
         orig(self);
 
-        if (!AutoSaverModule.Settings.Enabled) {
+        if (!ExSrtModule.Settings.Enabled) {
             RestoreMouseVisibility();
             isEditingActive = false;
             return;
@@ -46,7 +46,7 @@ public static class LookoutEditController {
             return;
         }
 
-        if (AutoSaverModule.Settings.ToggleLookoutEdit.Pressed) {
+        if (ExSrtModule.Settings.ToggleLookoutEdit.Pressed) {
             isEditingActive = !isEditingActive;
             UI.Toast.Show(self, isEditingActive ? "Lookout edit enabled" : "Lookout edit disabled");
         }
@@ -71,15 +71,15 @@ public static class LookoutEditController {
         }
 
         if (changed) {
-            Logger.Info("AutoSaver", $"Lookout edit updated room [{target.Key.RoomName}] cell=({target.Cell.X}, {target.Cell.Y}) markedCells={target.Mask.CountMarkedCells()}");
+            Logger.Info("ex-srt", $"Lookout edit updated room [{target.Key.RoomName}] cell=({target.Cell.X}, {target.Cell.Y}) markedCells={target.Mask.CountMarkedCells()}");
         }
     }
 
     private static void OnLevelRender(On.Celeste.Level.orig_Render orig, Level self) {
         orig(self);
 
-        if (!AutoSaverModule.Settings.Enabled ||
-            !AutoSaverModule.Settings.ShowLookoutEditOverlay ||
+        if (!ExSrtModule.Settings.Enabled ||
+            !ExSrtModule.Settings.ShowLookoutEditOverlay ||
             GetActiveLookout(self) == null) {
             return;
         }

@@ -1,4 +1,4 @@
-namespace Celeste.Mod.AutoSaver.Model;
+namespace Celeste.Mod.ExSrt.Model;
 
 public sealed class RoomRegionIndex {
     private readonly int[] regionIdsByCell;

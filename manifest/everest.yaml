@@ -1,6 +1,6 @@
-- Name: AutoSaver
+- Name: ex-srt
   Version: 0.1.0
-  DLL: AutoSaver.dll
+  DLL: ex-srt.dll
   Dependencies:
     - Name: Everest
       Version: 1.0.0

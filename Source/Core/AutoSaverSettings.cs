@@ -1,7 +1,7 @@
-namespace Celeste.Mod.AutoSaver;
+namespace Celeste.Mod.ExSrt;
 
-[SettingName("AutoSaver")]
-public class AutoSaverSettings : EverestModuleSettings {
+[SettingName("ex-srt")]
+public class ExSrtSettings : EverestModuleSettings {
     public bool Enabled { get; set; } = true;
     public int TriggerEnterCountK { get; set; } = 1;
     public bool DisableSrtFreezeOnAutoSave { get; set; } = true;

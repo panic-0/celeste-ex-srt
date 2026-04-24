@@ -143,17 +143,21 @@ public static class SpeedrunToolInterop {
         }
     }
 
-    public static bool CurrentSlotHasState() {
+    public static bool TryCurrentSlotHasState(out bool hasState) {
+        hasState = true;
         try {
             if (reflectedIsSavedMethod != null) {
-                return (bool) reflectedIsSavedMethod.Invoke(null, [AutoSaveSlotName])!;
+                hasState = (bool) reflectedIsSavedMethod.Invoke(null, [AutoSaveSlotName])!;
+                return true;
             }
 
             if (TasImports.TasIsSaved == null) {
+                Logger.Log(LogTag, "Speedrun Tool saved-state query unavailable; skipping auto-save to avoid overwriting an existing slot.");
                 return false;
             }
 
-            return TasImports.TasIsSaved(AutoSaveSlotName);
+            hasState = TasImports.TasIsSaved(AutoSaveSlotName);
+            return true;
         }
         catch (Exception ex) {
             Logger.Log(LogTag, $"Speedrun Tool saved-state query failed: {ex}");

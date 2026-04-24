@@ -7,8 +7,11 @@ public static class RegionTriggerController {
     private const float RuntimeToEditorScale = 8f;
     private static readonly Color LevelOverlayColor = new(255, 150, 70, 135);
     private static readonly Dictionary<string, RoomRegionIndex> CachedRegions = new();
+    private static readonly Dictionary<string, RoomRegionMask> CachedMasks = new();
     private static readonly Dictionary<string, int> CachedVersions = new();
     private static readonly Dictionary<string, HashSet<int>> LastRegionsByRoom = new();
+    private static readonly Dictionary<string, RoomRegionMask> EnterCountMasks = new();
+    private static readonly Dictionary<string, int> EnterCountVersions = new();
 
     public static void Load() {
         On.Celeste.Level.Update += OnLevelUpdate;
@@ -21,8 +24,11 @@ public static class RegionTriggerController {
         On.Celeste.Level.LoadLevel -= OnLevelLoadLevel;
         On.Celeste.Level.Update -= OnLevelUpdate;
         CachedRegions.Clear();
+        CachedMasks.Clear();
         CachedVersions.Clear();
         LastRegionsByRoom.Clear();
+        EnterCountMasks.Clear();
+        EnterCountVersions.Clear();
     }
 
     private static void OnLevelLoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes intro, bool isFromLoader) {
@@ -70,17 +76,22 @@ public static class RegionTriggerController {
 
         foreach (int regionId in currentRegions) {
             if (!lastRegions.Contains(regionId)) {
-                OnEnterRegion(self, key, regionId);
+                OnEnterRegion(self, key, mask, regionId);
             }
         }
 
         LastRegionsByRoom[key.ToString()] = currentRegions;
     }
 
-    private static void OnEnterRegion(Level level, RoomKey key, int regionId) {
+    private static void OnEnterRegion(Level level, RoomKey key, RoomRegionMask mask, int regionId) {
+        EnsureEnterCountsCurrent(key, mask);
         Dictionary<int, int> roomCounts = GetRoomCounts(key);
         roomCounts[regionId] = roomCounts.GetValueOrDefault(regionId) + 1;
-        bool slotHasState = SpeedrunToolInterop.CurrentSlotHasState();
+        if (!SpeedrunToolInterop.TryCurrentSlotHasState(out bool slotHasState)) {
+            Logger.Log("ex-srt", $"Skipped auto-save for region #{regionId} in room [{key.RoomName}] because slot [{SpeedrunToolInterop.AutoSaveSlotName}] state could not be verified");
+            return;
+        }
+
         Logger.Log("ex-srt", $"Entered region #{regionId} in room [{key.RoomName}], count={roomCounts[regionId]}, slotHasState={slotHasState}");
 
         if (slotHasState) {
@@ -115,6 +126,22 @@ public static class RegionTriggerController {
         }
     }
 
+    private static void EnsureEnterCountsCurrent(RoomKey key, RoomRegionMask mask) {
+        string keyText = key.ToString();
+        bool hasKnownMask = EnterCountMasks.TryGetValue(keyText, out RoomRegionMask? countMask);
+        bool hasKnownVersion = EnterCountVersions.TryGetValue(keyText, out int countVersion);
+        bool changed = hasKnownMask &&
+                       (!ReferenceEquals(countMask, mask) || !hasKnownVersion || countVersion != mask.Version);
+
+        if (changed) {
+            ExSrtModule.Session.EnterCounts.Remove(keyText);
+            LastRegionsByRoom.Remove(keyText);
+        }
+
+        EnterCountMasks[keyText] = mask;
+        EnterCountVersions[keyText] = mask.Version;
+    }
+
     private static Dictionary<int, int> GetRoomCounts(RoomKey key) {
         if (!ExSrtModule.Session.EnterCounts.TryGetValue(key.ToString(), out Dictionary<int, int>? counts)) {
             counts = new Dictionary<int, int>();
@@ -128,11 +155,18 @@ public static class RegionTriggerController {
         RoomKey key = RoomKey.From(level);
         RoomRegionMask? mask = RegionStorage.TryGet(key);
         if (mask == null) {
+            CachedMasks.Remove(key.ToString());
+            CachedVersions.Remove(key.ToString());
             return CachedRegions[key.ToString()] = new RoomRegionIndex(0, 0, [], []);
         }
 
-        if (!CachedVersions.TryGetValue(key.ToString(), out int version) || version != mask.Version || !CachedRegions.ContainsKey(key.ToString())) {
+        if (!CachedMasks.TryGetValue(key.ToString(), out RoomRegionMask? cachedMask) ||
+            !ReferenceEquals(cachedMask, mask) ||
+            !CachedVersions.TryGetValue(key.ToString(), out int version) ||
+            version != mask.Version ||
+            !CachedRegions.ContainsKey(key.ToString())) {
             CachedRegions[key.ToString()] = RegionGraph.BuildRegions(mask);
+            CachedMasks[key.ToString()] = mask;
             CachedVersions[key.ToString()] = mask.Version;
         }
 
